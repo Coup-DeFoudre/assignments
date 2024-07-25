@@ -39,11 +39,102 @@
 
   Testing the server - run `npm run test-todoServer` command in terminal
  */
-  const express = require('express');
-  const bodyParser = require('body-parser');
+  const express = require("express");
+  const bodyParser = require("body-parser");
   
   const app = express();
+  const port = 3000;
   
+  app.listen(port, () => {
+    console.log(`Example app listening at http://localhost:${port}`);
+  });
   app.use(bodyParser.json());
   
+  let todos = [];
+  
+  //creating todos:
+  
+  app.post("/todos", (req, res) => {
+    const todo = req.body;
+    todo.id = todos.length + 1;
+    try {
+      todos.push(todo);
+      res.status(201).send("Todo created successfully");
+    } catch (err) {
+      res.status(400).send("Error in creating todo");
+    }
+  });
+  
+  //retrieving todos:
+  
+  app.get("/todos", (req, res) => {
+    if (todos.length > 0) {
+      try {
+        res.status(200).send(todos);
+      } catch (err) {
+        res.status(400).send("Error in retrieving todos");
+      }
+    } else {
+      res.status(404).send("No todos found");
+    }
+  });
+  
+  //retrieving todos by id:
+  
+  app.post("/todos/:id", (req, res) => {
+    const id = req.params.id;
+    const todo = todos.find((todo) => todo.id == id);
+    if (todo) {
+      try {
+        res.status(200).send(todo);
+      } catch (err) {
+        res.status(400).send("Error in retrieving todo");
+      }
+    } else {
+      res.status(404).send("Todo not found");
+    }
+  });
+  
+  //updating todos:
+  
+  app.put("/todos/:id", (req, res) => {
+    const id = req.params.id;
+    const todo = todos.find((todo) => todo.id == id);
+    if (todo) {
+      try {
+        todo.title = req.body.title;
+        todo.completed = req.body.completed;
+        todo.description = req.body.description;
+        res.status(200).send("Todo updated successfully");
+      } catch (err) {
+        res.status(400).send("Error in updating todo");
+      }
+    } else {
+      res.status(404).send("Todo not found");
+    }
+  });
+  
+  //deleting todos:
+  
+  app.delete("/todos/:id", (req, res) => {
+    const id = req.params.id;
+    const todo = todos.find((todo) => todo.id == id);
+    if (todo) {
+      try {
+        todos.pop(todo);
+        res.status(200).send("Todo deleted successfully");
+      } catch (err) {
+        res.status(400).send("Error in deleting todo");
+      }
+    } else {
+      res.status(404).send("Todo not found");
+    }
+  });
+  
+   // for all other routes, return 404
+   app.use((req, res, next) => {
+      res.status(404).send();
+    });
+  
   module.exports = app;
+  
